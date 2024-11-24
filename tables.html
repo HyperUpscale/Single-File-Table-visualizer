@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Light mode variables */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #2d3436;
+    --text-secondary: #636e72;
+    --border-color: #dfe6e9;
+    --accent-color: #00b894;
+    --accent-hover: #00a187;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --table-hover: #f5f6fa;
+    --selection-color: #dff9f3;
+    /* Terminal theme colors */
+    --terminal-bg: #1a1b1e;
+    --terminal-text: #00ff00;
+    --terminal-dim: #00cc00;
+    --terminal-header: #004400;
+    --terminal-border: #00ff00;
+    /* Architect theme colors */
+    --architect-primary: #2c3e50;
+    --architect-secondary: #34495e;
+    --architect-text: #2c3e50;
+    --architect-border: #95a5a6;
+    --architect-accent: #e67e22;
+    /* Retro Terminal theme */
+    --rt-global-font-size: 15px;
+    --rt-global-line-height: 1.4em;
+    --rt-font-stack: Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif;
+    --rt-background: #070708;
+    --rt-font-color: #e8e9ed;
+    --rt-primary-color: #50ffff;
+    --rt-secondary-color: #d5cec0;
+    --rt-code-bg: #3f3f44;
+    --rt-block-bg: #202020;
+    --rt-selection-bg: #50ffff33;
+  }
+
+  [data-theme="dark"] {
+    --bg-primary: #1a1b1e;
+    --bg-secondary: #2d2e32;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --border-color: #40454e;
+    --accent-color: #00b894;
+    --accent-hover: #00d1a7;
+    --glass-bg: rgba(45, 46, 50, 0.7);
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --table-hover: #2d2e32;
+    --selection-color: #1e3d38;
+    /* Terminal theme colors - unchanged in dark mode */
+    /* Architect theme colors - dark mode */
+    --architect-primary: #ecf0f1;
+    --architect-secondary: #bdc3c7;
+    --architect-text: #ecf0f1;
+    --architect-border: #7f8c8d;
+    --architect-accent: #f39c12;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .input-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 32px var(--shadow-color);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 30px;
+  }
+
+  #markdownInput {
+    width: 100%;
+    height: 150px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    resize: vertical;
+    transition: all 0.3s ease;
+  }
+
+  #markdownInput:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(0, 184, 148, 0.1);
+  }
+
+  .button {
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent-color);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .button:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 184, 148, 0.2);
+  }
+
+  .button:active {
+    transform: translateY(0);
+  }
+
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .theme-switch {
+    padding: 8px;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    display: flex;
+    gap: 8px;
+  }
+
+  .theme-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .theme-btn.active {
+    background: var(--accent-color);
+    color: white;
+  }
+
+  /* Terminal Style */
+  .table-terminal {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Fira Code', monospace;
+    background: var(--terminal-bg);
+    color: var(--terminal-text);
+    border: 1px solid var(--terminal-border);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+  }
+
+  .table-terminal th {
+    background: var(--terminal-header);
+    padding: 16px;
+    font-weight: 600;
+    color: var(--terminal-text);
+    border: 1px solid var(--terminal-border);
+    text-transform: uppercase;
+  }
+
+  .table-terminal td {
+    padding: 16px;
+    border: 1px solid var(--terminal-border);
+    opacity: 0.8;
+  }
+
+  .table-terminal tr:hover td {
+    background: rgba(0, 255, 0, 0.1);
+    opacity: 1;
+  }
+
+  .table-terminal td[contenteditable="true"]:focus {
+    outline: 2px solid var(--terminal-text);
+    background: rgba(0, 255, 0, 0.15);
+  }
+
+  .table-terminal::before {
+    content: '$ TABLE_VIEW --format=display';
+    display: block;
+    padding: 8px 16px;
+    color: var(--terminal-text);
+    border-bottom: 1px solid var(--terminal-border);
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+  }
+
+  /* Architect Style */
+  .table-architect {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'Architects Daughter', cursive;
+    background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.4'%3E%3Cpath d='M0 0h100v100H0z'/%3E%3Cpath fill='%23ffffff' d='M10 10h80v80H10z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .table-architect th {
+    background: var(--architect-secondary);
+    padding: 16px;
+    font-weight: normal;
+    color: white;
+    border: 2px solid var(--architect-border);
+    border-radius: 8px 8px 0 0;
+    font-size: 1.2em;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .table-architect td {
+    padding: 16px;
+    border: 2px solid var(--architect-border);
+    color: var(--architect-text);
+    font-size: 1.1em;
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  .table-architect tr:hover td {
+    background: rgba(230, 126, 34, 0.1);
+  }
+
+  .table-architect td[contenteditable="true"]:focus {
+    outline: none;
+    background: white;
+    box-shadow: inset 0 0 0 2px var(--architect-accent);
+  }
+
+  .table-architect::before {
+    content: '✏️ Notes & Data';
+    display: block;
+    padding: 8px 16px;
+    color: var(--architect-text);
+    font-size: 1.4em;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  /* Modern Style */
+  .table-modern {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--bg-primary);
+  }
+
+  .table-modern th {
+    background: var(--bg-secondary);
+    padding: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .table-modern td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+  }
+
+  .table-modern tr:hover td {
+    background: var(--table-hover);
+  }
+
+  /* Minimal Style */
+  .table-minimal {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table-minimal th {
+    padding: 16px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .table-minimal td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  /* Bordered Style */
+  .table-bordered {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .table-bordered th,
+  .table-bordered td {
+    padding: 16px;
+    border: 1px solid var(--border-color);
+  }
+
+  .table-bordered th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+  }
+
+  /* Retro Terminal Style */
+  .table-retro {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+    font-family: var(--rt-font-stack);
+    background: var(--rt-background);
+    color: var(--rt-font-color);
+    font-size: var(--rt-global-font-size);
+    line-height: var(--rt-global-line-height);
+    text-rendering: geometricPrecision;
+    margin: 0;
+    position: relative;
+  }
+
+  .table-retro::before {
+    content: "root@terminal:~$ display --table-data --format=grid";
+    display: block;
+    padding: 10px;
+    color: var(--rt-primary-color);
+    font-family: var(--rt-font-stack);
+    border-bottom: 1px solid var(--rt-primary-color);
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+
+  .table-retro th {
+    background: var(--rt-block-bg);
+    padding: 12px 15px;
+    font-weight: 600;
+    color: var(--rt-primary-color);
+    border: 1px solid var(--rt-primary-color);
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .table-retro td {
+    padding: 12px 15px;
+    border: 1px solid var(--rt-secondary-color);
+    background: var(--rt-background);
+    transition: all 0.2s ease;
+  }
+
+  .table-retro tr:hover td {
+    background: var(--rt-code-bg);
+    color: var(--rt-primary-color);
+  }
+
+  .table-retro td[contenteditable="true"]:focus {
+    outline: none;
+    background: var(--rt-block-bg);
+    border-color: var(--rt-primary-color);
+    box-shadow: 0 0 0 1px var(--rt-primary-color);
+  }
+
+  .table-retro td.selected,
+  .table-retro th.selected {
+    background: var(--rt-selection-bg) !important;
+  }
+
+  .table-retro th::after {
+    color: var(--rt-primary-color);
+    opacity: 0.8;
+  }
+
+  .table-retro::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      transparent 50%,
+      rgba(0, 0, 0, 0.05) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @keyframes flicker {
+    0% { opacity: 0.99; }
+    5% { opacity: 0.96; }
+    10% { opacity: 0.97; }
+    15% { opacity: 0.99; }
+    20% { opacity: 0.96; }
+    25% { opacity: 0.99; }
+    30% { opacity: 0.97; }
+    35% { opacity: 0.99; }
+    40% { opacity: 0.98; }
+    45% { opacity: 0.97; }
+    50% { opacity: 0.99; }
+    55% { opacity: 0.98; }
+    60% { opacity: 0.97; }
+    65% { opacity: 0.99; }
+    70% { opacity: 0.98; }
+    75% { opacity: 0.99; }
+    80% { opacity: 0.98; }
+    85% { opacity: 0.97; }
+    90% { opacity: 0.99; }
+    95% { opacity: 0.98; }
+    100% { opacity: 0.99; }
+  }
+
+  .table-retro {
+    animation: flicker 4s linear infinite;
+  }
+
+  /* Common table features */
+  .dynamic-table td[contenteditable="true"]:focus {
+    outline: 2px solid var(--accent-color);
+    border-radius: 4px;
+    padding: 15px;
+  }
+
+  .dynamic-table td.selected,
+  .dynamic-table th.selected {
+    background: var(--selection-color) !important;
+  }
+
+  .dynamic-table th {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+  }
+
+  .dynamic-table th::after {
+    content: '↕';
+    position: absolute;
+    right: 8px;
+    opacity: 0.5;
+  }
+
+  .dynamic-table th.asc::after {
+    content: '↑';
+    opacity: 1;
+  }
+
+  .dynamic-table th.desc::after {
+    content: '↓';
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="input-container">
+    <textarea id="markdownInput" placeholder="Paste your table here (supports both markdown and tab-separated formats)..."></textarea>
+    <div class="controls">
+      <button id="pasteParseButton" class="button">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+        Paste & Parse
+      </button>
+      <button id="addColumnButton" class="button">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add Column
+      </button>
+      <button id="addRowButton" class="button">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add Row
+      </button>
+      <button onclick="copySelectedCells()" class="button">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+        </svg>
+        Copy Selected
+      </button>
+      <button id="loadFileButton" class="button">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Load File
+      </button>
+      <button id="saveFileButton" class="button">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+        </svg>
+        Save File
+      </button>
+      <div class="theme-switch">
+        <button onclick="setTableStyle('retro')" class="theme-btn" data-style="retro">Retro Terminal</button>        
+        <button onclick="setTableStyle('modern')" class="theme-btn active" data-style="modern">Modern</button>
+        <button onclick="setTableStyle('terminal')" class="theme-btn" data-style="terminal">Terminal</button>
+        <button onclick="setTableStyle('architect')" class="theme-btn" data-style="architect">Architect</button>
+        
+      </div>
+      <button onclick="toggleTheme()" class="button">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+        Toggle Dark Mode
+      </button>
+    </div>
+  </div>
+  <div id="tableContainer" class="table-container"></div>
+</div>
+
+<script>
+function parseMarkdownTable(input) {
+    const lines = input.trim().split('\n');
+    if (lines.length < 1) return null;
+
+    // Check format type
+    if (lines[0].includes('|')) {
+        return parseMarkdownFormat(lines);
+    } else if (lines[0].includes('\t')) {
+        return parseTabSeparated(lines);
+    } else if (lines[0].includes(',')) {
+        return parseCSV(lines);
+    }
+    return null;
+}
+
+function parseMarkdownFormat(lines) {
+    // Parse markdown table
+    const headers = lines[0]
+        .split('|')
+        .filter(cell => cell.trim())
+        .map(cell => cell.trim());
+
+    // Skip separator line (line with |---|---|)
+    const rows = lines.slice(2).map(line => 
+        line.split('|')
+            .filter(cell => cell.trim())
+            .map(cell => cell.trim())
+    );
+
+    return { headers, rows };
+}
+
+function parseTabSeparated(lines) {
+    const headers = lines[0].split('\t').map(cell => cell.trim());
+    const rows = lines.slice(1).map(line => 
+        line.split('\t').map(cell => cell.trim())
+    );
+
+    return { headers, rows };
+}
+
+function parseCSV(lines) {
+    function parseCSVLine(line) {
+        const cells = [];
+        let currentCell = '';
+        let insideQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+            
+            if (char === '"') {
+                if (insideQuotes && nextChar === '"') {
+                    // Handle escaped quotes
+                    currentCell += '"';
+                    i++; // Skip next quote
+                } else {
+                    // Toggle quote state
+                    insideQuotes = !insideQuotes;
+                }
+            } else if (char === ',' && !insideQuotes) {
+                // End of cell
+                cells.push(currentCell.trim());
+                currentCell = '';
+            } else {
+                currentCell += char;
+            }
+        }
+        
+        // Add the last cell
+        cells.push(currentCell.trim());
+        return cells;
+    }
+
+    // Parse headers and rows
+    const headers = parseCSVLine(lines[0]);
+    const rows = lines.slice(1).map(line => parseCSVLine(line));
+
+    return { headers, rows };
+}
+
+function createHtmlTable(tableData) {
+    if (!tableData) return '';
+    
+    const table = document.createElement('table');
+    table.className = 'dynamic-table table-modern';
+    
+    // Create header
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    tableData.headers.forEach((header, index) => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        th.dataset.index = index;
+        th.addEventListener('click', () => sortTable(index, table));
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    
+    // Create body
+    const tbody = document.createElement('tbody');
+    tableData.rows.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+            const td = document.createElement('td');
+            td.innerHTML = cell.replace(/\n/g, '<br>');
+            td.contentEditable = true;
+            td.addEventListener('blur', () => saveTableState(table));
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+
+    // Add selection functionality
+    table.addEventListener('click', handleCellSelection);
+    
+    return table;
+}
+
+function sortTable(columnIndex, table) {
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+    const th = thead.querySelector(`th[data-index="${columnIndex}"]`);
+    const isAsc = !th.classList.contains('asc');
+    
+    // Reset all headers
+    thead.querySelectorAll('th').forEach(header => {
+        header.classList.remove('asc', 'desc');
+    });
+    
+    // Set current header sort state
+    th.classList.add(isAsc ? 'asc' : 'desc');
+    
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const sortedRows = rows.sort((a, b) => {
+        const aValue = a.cells[columnIndex].textContent;
+        const bValue = b.cells[columnIndex].textContent;
+        
+        // Try numeric sort first
+        const aNum = parseFloat(aValue);
+        const bNum = parseFloat(bValue);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return isAsc ? aNum - bNum : bNum - aNum;
+        }
+        
+        // Fall back to string sort
+        return isAsc 
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+    });
+    
+    tbody.append(...sortedRows);
+    saveTableState(table);
+}
+
+function handleCellSelection(event) {
+    const table = event.currentTarget;
+    const cell = event.target.closest('td, th');
+    if (!cell) return;
+    
+    if (event.shiftKey && lastSelectedCell) {
+        // Clear previous selection
+        table.querySelectorAll('.selected').forEach(cell => {
+            cell.classList.remove('selected');
+        });
+        
+        // Get start and end positions
+        const start = getCellPosition(lastSelectedCell);
+        const end = getCellPosition(cell);
+        
+        // Select all cells in range
+        const minRow = Math.min(start.row, end.row);
+        const maxRow = Math.max(start.row, end.row);
+        const minCol = Math.min(start.col, end.col);
+        const maxCol = Math.max(start.col, end.col);
+        
+        for (let i = minRow; i <= maxRow; i++) {
+            for (let j = minCol; j <= maxCol; j++) {
+                const cell = table.rows[i].cells[j];
+                cell.classList.add('selected');
+            }
+        }
+    } else {
+        if (!event.ctrlKey && !event.metaKey) {
+            // Clear previous selection if not holding Ctrl/Cmd
+            table.querySelectorAll('.selected').forEach(cell => {
+                cell.classList.remove('selected');
+            });
+        }
+        cell.classList.toggle('selected');
+        lastSelectedCell = cell;
+    }
+}
+
+function getCellPosition(cell) {
+    const row = cell.parentElement.rowIndex;
+    const col = cell.cellIndex;
+    return { row, col };
+}
+
+function copySelectedCells() {
+    const table = document.querySelector('.dynamic-table');
+    const selected = table.querySelectorAll('.selected');
+    if (selected.length === 0) return;
+    
+    const cells = Array.from(selected).map(cell => cell.textContent);
+    navigator.clipboard.writeText(cells.join('\t'));
+}
+
+let lastSelectedCell = null;
+
+function saveTableState(table) {
+    // Save table state to localStorage if needed
+    // This is a placeholder for future functionality
+}
+
+function setTableStyle(style) {
+    const table = document.querySelector('.dynamic-table');
+    if (!table) return;
+
+    // Update active button
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.style === style);
+    });
+
+    // Update table class
+    table.classList.remove('table-modern', 'table-minimal', 'table-bordered', 'table-terminal', 'table-architect', 'table-retro');
+    table.classList.add(`table-${style}`);
+}
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+}
+
+// Initialize theme from system preference
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('pasteParseButton').addEventListener('click', pasteAndParse);
+    document.getElementById('addColumnButton').addEventListener('click', addColumn);
+    document.getElementById('addRowButton').addEventListener('click', addRow);
+    document.getElementById('loadFileButton').addEventListener('click', loadFile);
+    document.getElementById('saveFileButton').addEventListener('click', saveFile);
+    
+    // Initialize the textarea parse event
+    document.getElementById('markdownInput').addEventListener('input', () => {
+        const input = document.getElementById('markdownInput').value;
+        const tableData = parseMarkdownTable(input);
+        if (tableData) {
+            const tableContainer = document.getElementById('tableContainer');
+            tableContainer.innerHTML = '';
+            tableContainer.appendChild(createHtmlTable(tableData));
+        }
+    });
+});
+
+// New functions for table manipulation
+async function pasteAndParse() {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('markdownInput').value = text;
+        const tableData = parseMarkdownTable(text);
+        if (tableData) {
+            const table = createHtmlTable(tableData);
+            document.getElementById('tableContainer').innerHTML = '';
+            document.getElementById('tableContainer').appendChild(table);
+        }
+    } catch (err) {
+        console.error('Failed to read clipboard:', err);
+        alert('Please make sure you have content in your clipboard and try again.');
+    }
+}
+
+function addColumn() {
+    const table = document.querySelector('.dynamic-table');
+    if (!table) return;
+    
+    // Add header
+    const headerRow = table.querySelector('thead tr');
+    const th = document.createElement('th');
+    th.textContent = `Column ${headerRow.children.length + 1}`;
+    th.dataset.index = headerRow.children.length;
+    th.addEventListener('click', () => sortTable(th.dataset.index, table));
+    headerRow.appendChild(th);
+    
+    // Add empty cell to each row
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const td = document.createElement('td');
+        td.contentEditable = true;
+        td.addEventListener('blur', () => saveTableState(table));
+        row.appendChild(td);
+    });
+    
+    // Try to paste content if available
+    tryPasteIntoLastColumn(table);
+}
+
+async function tryPasteIntoLastColumn(table) {
+    try {
+        const text = await navigator.clipboard.readText();
+        const rows = text.trim().split('\n');
+        const tableRows = table.querySelectorAll('tbody tr');
+        const lastColumnIndex = table.querySelector('thead tr').children.length - 1;
+        
+        rows.forEach((content, index) => {
+            if (tableRows[index]) {
+                tableRows[index].cells[lastColumnIndex].textContent = content.trim();
+            }
+        });
+    } catch (err) {
+        console.log('No clipboard content available for new column');
+    }
+}
+
+function addRow() {
+    const table = document.querySelector('.dynamic-table');
+    if (!table) return;
+    
+    const tbody = table.querySelector('tbody');
+    const tr = document.createElement('tr');
+    const columnCount = table.querySelector('thead tr').children.length;
+    
+    for (let i = 0; i < columnCount; i++) {
+        const td = document.createElement('td');
+        td.contentEditable = true;
+        td.addEventListener('blur', () => saveTableState(table));
+        tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+    
+    // Try to paste content if available
+    tryPasteIntoLastRow(tr);
+}
+
+async function tryPasteIntoLastRow(row) {
+    try {
+        const text = await navigator.clipboard.readText();
+        const cells = text.trim().split('\t');
+        Array.from(row.cells).forEach((cell, index) => {
+            if (cells[index]) {
+                cell.textContent = cells[index].trim();
+            }
+        });
+    } catch (err) {
+        console.log('No clipboard content available for new row');
+    }
+}
+
+function tableToMarkdown(table) {
+    if (!table) return '';
+    
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent);
+    const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+        Array.from(tr.cells).map(td => td.textContent)
+    );
+    
+    const headerRow = `| ${headers.join(' | ')} |`;
+    const separatorRow = `| ${headers.map(() => '---').join(' | ')} |`;
+    const dataRows = rows.map(row => `| ${row.join(' | ')} |`);
+    
+    return [headerRow, separatorRow, ...dataRows].join('\n');
+}
+
+function tableToCSV(table) {
+    if (!table) return '';
+    
+    function escapeCSV(str) {
+        str = str.replace(/"/g, '""'); // Escape quotes
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            str = `"${str}"`; // Wrap in quotes if contains comma, quote or newline
+        }
+        return str;
+    }
+    
+    const headers = Array.from(table.querySelectorAll('th')).map(th => escapeCSV(th.textContent));
+    const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+        Array.from(tr.cells).map(td => escapeCSV(td.textContent))
+    );
+    
+    return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+}
+
+function saveFile() {
+    const table = document.querySelector('.dynamic-table');
+    if (!table) {
+        alert('No table to save!');
+        return;
+    }
+    
+    const saveAsCSV = confirm('Save as CSV? (Click Cancel for Markdown format)');
+    const content = saveAsCSV ? tableToCSV(table) : tableToMarkdown(table);
+    const type = saveAsCSV ? 'text/csv' : 'text/markdown';
+    const extension = saveAsCSV ? 'csv' : 'md';
+    
+    const blob = new Blob([content], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `table.${extension}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function loadFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.md,.txt';
+    
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = event => {
+            const content = event.target.result;
+            document.getElementById('markdownInput').value = content;
+            const tableData = parseMarkdownTable(content);
+            if (tableData) {
+                const table = createHtmlTable(tableData);
+                document.getElementById('tableContainer').innerHTML = '';
+                document.getElementById('tableContainer').appendChild(table);
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+</script>
+</body>
+</html>
